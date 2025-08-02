@@ -17,7 +17,9 @@ public class FlightDepartureBeforeCurrentTimeFilter implements FlightFilter{
     public List<Flight> filter(List<Flight> flights) {
         return flights
                 .stream()
-                .filter(flight -> flight.getSegments().get(0).getDepartureDate().isAfter(currentTime))
+                .filter(flight -> flight.getSegments()
+                        .stream()
+                        .noneMatch(segment -> segment.getDepartureDate().isBefore(currentTime)))
                 .toList();
     }
 }

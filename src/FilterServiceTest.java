@@ -12,23 +12,34 @@ import static org.junit.Assert.assertEquals;
 
 public class FilterServiceTest {
 
-    @Test
-    public void shouldReturnListOfFlightDepartureBeforeCurrentTimeFilter() {
-        LocalDateTime now = LocalDateTime.now();
-        Flight flightPast = FlightBuilder.createFlight(now.minusDays(1), now);
-        Flight flightFuture = FlightBuilder.createFlight(now.plusDays(1), now.plusDays(1).plusHours(2));
+    public final static LocalDateTime NOW = LocalDateTime.now();
 
-        FlightFilter filter = new FlightDepartureBeforeCurrentTimeFilter(now);
+    @Test
+    public void shouldReturnListOfFlightWhenUsingFlightDepartureBeforeCurrentTimeFilter() {
+        Flight flightPast = FlightBuilder.createFlight(NOW.minusDays(1), NOW);
+        Flight flightFuture = FlightBuilder.createFlight(NOW.plusDays(1), NOW.plusDays(1).plusHours(2));
+
+        FlightFilter filter = new FlightDepartureBeforeCurrentTimeFilter(NOW);
         List<Flight> result = filter.filter(List.of(flightPast, flightFuture));
 
         assertEquals(1, result.size());
     }
 
     @Test
-    public void shouldReturnListOfFlightWithArrivalBeforeDepartureFilter() {
-        LocalDateTime now = LocalDateTime.now();
-        Flight flightWithArrivalBeforeDeparture = FlightBuilder.createFlight(now, now.minusHours(1));
-        Flight flightWithArrivalAfterDeparture = FlightBuilder.createFlight(now, now.plusHours(2));
+    public void shouldReturnEmptyListWhenUsingFlightDepartureBeforeCurrentTimeFilter() {
+        Flight flightPast = FlightBuilder.createFlight(NOW.minusDays(1), NOW.minusDays(1).plusHours(2));
+        Flight flightFuture = FlightBuilder.createFlight(NOW.minusHours(6), NOW.plusHours(1));
+
+        FlightFilter filter = new FlightDepartureBeforeCurrentTimeFilter(NOW);
+        List<Flight> result = filter.filter(List.of(flightPast, flightFuture));
+
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void shouldReturnListOfFlightWhenUsingFlightWithArrivalBeforeDepartureFilter() {
+        Flight flightWithArrivalBeforeDeparture = FlightBuilder.createFlight(NOW, NOW.minusHours(1));
+        Flight flightWithArrivalAfterDeparture = FlightBuilder.createFlight(NOW, NOW.plusHours(2));
 
         FlightFilter filter = new FlightWithArrivalBeforeDepartureFilter();
         List<Flight> result = filter.filter(List.of(flightWithArrivalBeforeDeparture, flightWithArrivalAfterDeparture));
@@ -37,18 +48,28 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void shouldReturnListOfFlightWithMoreThanTwoHoursGroundTimeFilter() {
-        LocalDateTime now = LocalDateTime.now();
+    public void shouldReturnEmptyListWhenUsingFlightWithArrivalBeforeDepartureFilter() {
+        Flight flightWithArrivalBeforeDeparture = FlightBuilder.createFlight(NOW, NOW.minusHours(1));
+        Flight flightWithArrivalAfterDeparture = FlightBuilder.createFlight(NOW, NOW.minusHours(3));
+
+        FlightFilter filter = new FlightWithArrivalBeforeDepartureFilter();
+        List<Flight> result = filter.filter(List.of(flightWithArrivalBeforeDeparture, flightWithArrivalAfterDeparture));
+
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void shouldReturnListOfFlightWhenUsingFlightWithMoreThanTwoHoursGroundTimeFilter() {
         Flight flightMoreTwoHoursGroundTime = FlightBuilder.createFlight(
-                now,
-                now.plusHours(2),
-                now.plusHours(6),
-                now.plusHours(7));
+                NOW,
+                NOW.plusHours(2),
+                NOW.plusHours(6),
+                NOW.plusHours(7));
         Flight flightLessTwoHoursGroundTime = FlightBuilder.createFlight(
-                now,
-                now.plusHours(2),
-                now.plusHours(3),
-                now.plusHours(5));
+                NOW,
+                NOW.plusHours(2),
+                NOW.plusHours(3),
+                NOW.plusHours(5));
 
         FlightFilter filter = new FlightWithMoreThanTwoHoursGroundTime();
         List<Flight> result = filter.filter(List.of(
@@ -57,5 +78,27 @@ public class FilterServiceTest {
         ));
 
         assertEquals(1, result.size());
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenUsingFlightWithMoreThanTwoHoursGroundTimeFilter() {
+        Flight flightMoreTwoHoursGroundTime = FlightBuilder.createFlight(
+                NOW,
+                NOW.plusHours(2),
+                NOW.plusHours(5),
+                NOW.plusHours(8));
+        Flight flightLessTwoHoursGroundTime = FlightBuilder.createFlight(
+                NOW,
+                NOW.plusHours(2),
+                NOW.plusHours(9),
+                NOW.plusHours(10));
+
+        FlightFilter filter = new FlightWithMoreThanTwoHoursGroundTime();
+        List<Flight> result = filter.filter(List.of(
+                flightMoreTwoHoursGroundTime,
+                flightLessTwoHoursGroundTime
+        ));
+
+        assertEquals(0, result.size());
     }
 }

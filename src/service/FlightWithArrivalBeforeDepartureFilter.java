@@ -14,7 +14,7 @@ public class FlightWithArrivalBeforeDepartureFilter implements FlightFilter {
             if (flight
                     .getSegments()
                     .stream()
-                    .noneMatch(s -> s.getArrivalDate().isAfter(s.getDepartureDate()))) {
+                    .noneMatch(s -> s.getArrivalDate().isBefore(s.getDepartureDate()))) {
                 filteredFlights.add(flight);
             }
         }

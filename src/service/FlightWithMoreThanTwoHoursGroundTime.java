@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class FlightWithMoreThanTwoHoursGroundTime implements FlightFilter{
-    private final long GROUND_TIME = 2;
+    private final Duration GROUND_TIME = Duration.ofHours(2);
 
     @Override
     public List<Flight> filter(List<Flight> flights) {
@@ -20,17 +20,19 @@ public class FlightWithMoreThanTwoHoursGroundTime implements FlightFilter{
                             return true;
                         }
 
-                        long totalGroundTime = 0;
+                        Duration totalGroundTime = Duration.ZERO;
                         for (int i = 1; i < segments.size(); i++) {
                             LocalDateTime previousArrival = segments.get(i-1).getArrivalDate();
                             LocalDateTime currentDeparture = segments.get(i).getDepartureDate();
-                            totalGroundTime += Duration.between(previousArrival, currentDeparture).toHours();
-                            if (totalGroundTime >= GROUND_TIME) {
+                            Duration currentGroundTime = Duration.between(previousArrival, currentDeparture);
+
+                            totalGroundTime = totalGroundTime.plus(currentGroundTime);
+                            if (totalGroundTime.compareTo(GROUND_TIME) > 0) {
                                 return false;
                             }
                         }
                         return true;
                     })
                     .toList();
-        }
     }
+}
